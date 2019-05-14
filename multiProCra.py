@@ -23,18 +23,21 @@ def parse(html):
 
 unseen = set([base_url,])
 seen = set()
-count=1
-t1=time.time()
 
-while len(unseen) != 0:                 # still get some url to visit
+
+if __name__ == "__main__":
+  pool = mp.Pool(4)                       
+  count, t1 = 1, time.time()
+  while len(unseen) != 0:                 # still get some url to visit
     if len(seen) > 20:
             break
-        
     print('\nDistributed Crawling...')
-    htmls = [crawl(url) for url in unseen]
+    crawl_jobs = [pool.apply_async(crawl, args=(url,)) for url in unseen]
+    htmls = [j.get() for j in crawl_jobs]                                       # request connection
 
     print('\nDistributed Parsing...')
-    results = [parse(html) for html in htmls]
+    parse_jobs = [pool.apply_async(parse, args=(html,)) for html in htmls]
+    results = [j.get() for j in parse_jobs]                                     # parse html
 
     print('\nAnalysing...')
     seen.update(unseen)         # seen the crawled
@@ -44,4 +47,30 @@ while len(unseen) != 0:                 # still get some url to visit
         print(count, title, url)
         count += 1
         unseen.update(page_urls - seen)     # get new url to crawl
-print('Total time: %.1f s' % (time.time()-t1, ))    # get time
+  print('Total time: %.1f s' % (time.time()-t1, ))    # 16 s !!!
+
+
+
+
+##Normal
+# while len(unseen) != 0:                 # still get some url to visit
+#     if len(seen) > 20:
+#             break
+        
+#     print('\nDistributed Crawling...')
+#     htmls = [crawl(url) for url in unseen]
+
+#     print('\nDistributed Parsing...')
+#     results = [parse(html) for html in htmls]
+
+#     print('\nAnalysing...')
+#     seen.update(unseen)         # seen the crawled
+#     unseen.clear()              # nothing unseen
+
+#     for title, page_urls, url in results:
+#         print(count, title, url)
+#         count += 1
+#         unseen.update(page_urls - seen)     # get new url to crawl
+# print('Total time: %.1f s' % (time.time()-t1, ))    # get time
+
+
