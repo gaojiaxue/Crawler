@@ -44,4 +44,4 @@ while len(unseen) != 0:                 # still get some url to visit
         print(count, title, url)
         count += 1
         unseen.update(page_urls - seen)     # get new url to crawl
-print('Total time: %.1f s' % (time.time()-t1, ))    # 53 s
+print('Total time: %.1f s' % (time.time()-t1, ))    # get time
